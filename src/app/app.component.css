@@ -3,9 +3,26 @@
     margin: auto;
 }
 
+.center-text {
+    text-align: center;
+}
+
+.countdown {
+    margin-bottom: 10px;
+    font-size: 30px;
+}
+
+.instruction {
+    margin: auto;
+    margin-bottom: 5px;
+    font-size: 20px;
+}
+
 .text-to-copy {
     width: 800px;
     padding: 20px;
+    margin: auto;
+    margin-bottom: 20px;
     border: 1px solid black;
     font-size: 20px;
     color: black;
@@ -30,4 +47,9 @@
 
 .future-test {
     color: black;
+}
+
+.stats {
+    margin: auto;
+    font-size: 20px;
 }
