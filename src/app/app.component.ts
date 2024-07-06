@@ -1,11 +1,13 @@
+import { CommonModule } from '@angular/common';
 import { Component, HostListener } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { map, takeWhile, timer } from 'rxjs';
+import { CharacterComponent } from './character/character.component';
 
 @Component({
     selector: 'app-root',
     standalone: true,
-    imports: [RouterOutlet],
+    imports: [RouterOutlet, CommonModule, CharacterComponent],
     templateUrl: './app.component.html',
     styleUrl: './app.component.css'
 })
@@ -20,11 +22,19 @@ export class AppComponent {
     mistakeCounter = 0;
     countdownInSeconds = 90;
     remainingSeconds = this.countdownInSeconds;
+    characters: any[] = [];
     private isRunningCountdown = false;
     private isExpiredCountdown = false;
 
+
+    constructor() {
+        for (let char of this.endText) { this.characters.push({value: char, color: "blue"}); }
+    }
+
+
     @HostListener('document:keypress', ['$event'])
     handleKeyboardEvent(event: KeyboardEvent) {
+        this.characters[10].color = "red";
         if (!this.isRunningCountdown) {
             this.isRunningCountdown = true;
             const countdown = timer(0, 1000).pipe(map(n => this.countdownInSeconds - n), takeWhile(n => n > 0));

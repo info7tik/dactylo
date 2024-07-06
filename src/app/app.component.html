@@ -13,6 +13,11 @@
             <div>Mistakes: {{mistakeCounter}}</div>
             <div>Speed: {{wordNumber * 60 / countdownInSeconds}} words/min</div>
         </div>
+        <div>
+            <div *ngFor="let char of characters">
+                <app-character [character]="char.value" [color]="char.color"></app-character>
+            </div>
+        </div>
     </div>
 </main>
 
