@@ -44,16 +44,14 @@ export class AppComponent {
     constructor() {
         for (let word of this.textToType.split(" ")) {
             const wordLetters: ColoredLetter[] = [];
-            for (let char of word) {
+            const wordWithSpace = word += " ";
+            for (let char of wordWithSpace) {
                 wordLetters.push({ value: char, color: LetterColor.FUTURE_LETTER });
             }
-            wordLetters.push({ value: " ", color: LetterColor.FUTURE_LETTER });
             if (wordLetters.length > 0) {
                 this.words.push(wordLetters);
             }
         }
-        // Delete last space
-        this.words[this.words.length - 1].pop();
         const firstLetter = this.words[0][0];
         firstLetter.color = LetterColor.LETTER_TO_TYPE;
         this.characterToType = firstLetter.value;

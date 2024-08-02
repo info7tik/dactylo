@@ -1,1 +1,2 @@
-<span [style]="{color: [color]}">{{character}}</span>
+<span *ngIf="character !== ' '" [style]="{color: [color]}">{{character}}</span>
+<span *ngIf="character === ' '" [style]="{backgroundColor: [color]}">&nbsp;</span>

@@ -7,15 +7,15 @@
     text-align: center;
 }
 
-.countdown {
-    margin-bottom: 10px;
-    font-size: 30px;
-}
-
 .instruction {
     margin: auto;
     margin-bottom: 5px;
     font-size: 20px;
+}
+
+.countdown {
+    margin-bottom: 10px;
+    font-size: 30px;
 }
 
 .text-to-copy {
@@ -29,24 +29,8 @@
     line-height: 30px;
 }
 
-.past-text {
-    color: lightgray;
-}
-
-.current-text {
+.word {
     display: inline-block;
-    color: orange;
-}
-
-.current-whitespace {
-    display: inline-block;
-    width: 6px;
-    height: 20px;
-    background-color: orange;
-}
-
-.future-test {
-    color: black;
 }
 
 .stats {

@@ -4,7 +4,7 @@
         <div class="instruction center-text">{{instruction}}</div>
         <div class="countdown center-text">{{remainingSeconds}}</div>
         <div class="text-to-copy">
-            <div *ngFor="let word of words">
+            <div *ngFor="let word of words" class="word">
                 <app-character *ngFor="let char of word" [character]="char.value" [color]="char.color"></app-character>
             </div>
         </div>

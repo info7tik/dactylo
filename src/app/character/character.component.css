@@ -1,7 +1,11 @@
-.blue {
+.blueSpace {
     color: blue;
 }
 
-.black {
+.blackSpace {
     color: black;
+}
+
+.redSpace {
+    color: red;
 }
