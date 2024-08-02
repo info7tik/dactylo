@@ -4,19 +4,14 @@
         <div class="instruction center-text">{{instruction}}</div>
         <div class="countdown center-text">{{remainingSeconds}}</div>
         <div class="text-to-copy">
-            <span class="past-text">{{beginText}}</span>
-            <div [class.current-whitespace]="blueLetter === ' '" class="current-text">{{ blueLetter }}</div>
-            <span class="future-text">{{endText}}</span>
+            <div *ngFor="let word of words">
+                <app-character *ngFor="let char of word" [character]="char.value" [color]="char.color"></app-character>
+            </div>
         </div>
         <div class="stats">
             <div>Accuracy: {{accuracyPercent.toFixed(1)}} %</div>
             <div>Mistakes: {{mistakeCounter}}</div>
             <div>Speed: {{wordNumber * 60 / countdownInSeconds}} words/min</div>
-        </div>
-        <div>
-            <div *ngFor="let char of characters">
-                <app-character [character]="char.value" [color]="char.color"></app-character>
-            </div>
         </div>
     </div>
 </main>

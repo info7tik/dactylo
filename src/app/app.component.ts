@@ -4,6 +4,18 @@ import { RouterOutlet } from '@angular/router';
 import { map, takeWhile, timer } from 'rxjs';
 import { CharacterComponent } from './character/character.component';
 
+enum LetterColor {
+    FUTURE_LETTER = "black",
+    LETTER_TO_TYPE = "blue",
+    PAST_LETTER_SUCCESS ="grey",
+    PAST_LETTER_ERROR =  "red"
+}
+
+interface ColoredLetter {
+    value: string;
+    color: LetterColor;
+}
+
 @Component({
     selector: 'app-root',
     standalone: true,
@@ -13,28 +25,37 @@ import { CharacterComponent } from './character/character.component';
 })
 export class AppComponent {
     title = 'dactyl0';
-    beginText: string = "";
-    blueLetter = "L";
-    endText = "es dinosaures forment un super-ordre ainsi qu'un clade extrêmement diversifié de sauropsides de la sous-classe des diapsides et dont les uniques représentants actuels sont les oiseaux. Ce sont des archosauriens ovipares, ayant en commun une posture érigée et partageant un certain nombre de synapomorphies telles que la présence d'une crête deltopectorale allongée au niveau de l'humérus et un acetabulum perforant le bassin. Présentes";
+    textToType = "Les dinosaures forment un super-ordre ainsi qu'un clade extrêmement diversifié de sauropsides de la sous-classe des diapsides et dont les uniques représentants actuels sont les oiseaux. Ce sont des archosauriens ovipares, ayant en commun une posture érigée et partageant un certain nombre de synapomorphies telles que la présence d'une crête deltopectorale allongée au niveau de l'humérus et un acetabulum perforant le bassin. Présentes";
     instruction = "Start to type the text";
+    wordIndex = 0;
+    characterIndex = 0;
+    characterToType = "";
     accuracyPercent = 0;
     wordNumber = 0;
     mistakeCounter = 0;
     countdownInSeconds = 90;
     remainingSeconds = this.countdownInSeconds;
-    characters: any[] = [];
+    words: ColoredLetter[][] = [];
     private isRunningCountdown = false;
     private isExpiredCountdown = false;
 
 
     constructor() {
-        for (let char of this.endText) { this.characters.push({value: char, color: "blue"}); }
+        for (let word of this.textToType.split(" ")) {
+            let wordLetters: ColoredLetter[] = [];
+            for (let char of word) {
+                wordLetters.push({ value: char, color: LetterColor.FUTURE_LETTER });
+            }
+            if (wordLetters.length > 0) {
+                this.words.push(wordLetters);
+            }
+        }
+        this.words[0][0].color = LetterColor.LETTER_TO_TYPE;
     }
 
 
     @HostListener('document:keypress', ['$event'])
     handleKeyboardEvent(event: KeyboardEvent) {
-        this.characters[10].color = "red";
         if (!this.isRunningCountdown) {
             this.isRunningCountdown = true;
             const countdown = timer(0, 1000).pipe(map(n => this.countdownInSeconds - n), takeWhile(n => n > 0));
@@ -42,26 +63,20 @@ export class AppComponent {
                 this.remainingSeconds -= 1;
                 if (this.remainingSeconds == 0) {
                     this.isExpiredCountdown = true;
-                    const properlyTypedWords: string[] = this.beginText.split(" ");
-                    if (properlyTypedWords.length == 0) {
-                        this.wordNumber = 0;
-                    } else {
-                        this.wordNumber = this.getLastElement(properlyTypedWords).length > 0 ?
-                            properlyTypedWords.length : properlyTypedWords.length - 1;
-                    }
-                    const properlyTypedCharacters = this.beginText.length;
+                    this.wordNumber = this.wordIndex;
+                    const properlyTypedCharacters = this.wordIndex * 2;
                     const totalHits = properlyTypedCharacters + this.mistakeCounter;
                     this.accuracyPercent = properlyTypedCharacters / totalHits * 100;
                 }
             });
         }
         if (!this.isExpiredCountdown) {
-            if (event.key == this.blueLetter) {
-                this.setNextCharInBlue();
-                if (this.endText.length == 0) {
-                    this.endText = this.beginText.substring(1) + this.blueLetter;
-                    this.blueLetter = this.beginText[0];
-                    this.beginText = "";
+            let keyTotype = this.words[this.wordIndex][this.characterIndex];
+            if (event.key == keyTotype.value) {
+                const lastWordIndex = this.words.length - 1;
+                const lastWordCharaacterIndex = this.words[lastWordIndex].length - 1;
+                if (this.wordIndex < lastWordIndex || lastWordCharaacterIndex < this.characterIndex) {
+                    this.selectNextCharacter();
                 }
             } else {
                 this.mistakeCounter++;
@@ -71,13 +86,12 @@ export class AppComponent {
         }
     }
 
-    setNextCharInBlue() {
-        this.beginText += this.blueLetter;
-        this.blueLetter = this.endText[0];
-        this.endText = this.endText.substring(1);
-    }
-
-    private getLastElement(array: any[]): any {
-        return array[array.length - 1];
+    selectNextCharacter() {
+        const currentWord = this.words[this.wordIndex];
+        if (this.characterIndex < currentWord.length) {
+            currentWord[this.characterIndex].color = LetterColor.PAST_LETTER_ERROR;
+            this.characterIndex++;
+            currentWord[this.characterIndex].color = LetterColor.LETTER_TO_TYPE;
+        }
     }
 }
