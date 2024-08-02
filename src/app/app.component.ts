@@ -33,7 +33,7 @@ export class AppComponent {
     accuracyPercent = 0;
     wordNumber = 0;
     mistakeCounter = 0;
-    countdownInSeconds = 10;
+    countdownInSeconds = 90;
     remainingSeconds = this.countdownInSeconds;
     words: ColoredLetter[][] = [];
     private isMistakeDetected = false;
