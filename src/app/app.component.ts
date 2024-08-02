@@ -7,8 +7,8 @@ import { CharacterComponent } from './character/character.component';
 enum LetterColor {
     FUTURE_LETTER = "black",
     LETTER_TO_TYPE = "blue",
-    PAST_LETTER_SUCCESS ="grey",
-    PAST_LETTER_ERROR =  "red"
+    PAST_LETTER_SUCCESS = "grey",
+    PAST_LETTER_ERROR = "red"
 }
 
 interface ColoredLetter {
@@ -42,20 +42,26 @@ export class AppComponent {
 
     constructor() {
         for (let word of this.textToType.split(" ")) {
-            let wordLetters: ColoredLetter[] = [];
+            const wordLetters: ColoredLetter[] = [];
             for (let char of word) {
                 wordLetters.push({ value: char, color: LetterColor.FUTURE_LETTER });
             }
+            wordLetters.push({ value: " ", color: LetterColor.FUTURE_LETTER });
             if (wordLetters.length > 0) {
                 this.words.push(wordLetters);
             }
         }
-        this.words[0][0].color = LetterColor.LETTER_TO_TYPE;
+        // Delete last space
+        this.words[this.words.length - 1].pop();
+        const firstLetter = this.words[0][0];
+        firstLetter.color = LetterColor.LETTER_TO_TYPE;
+        this.characterToType = firstLetter.value;
     }
 
 
     @HostListener('document:keypress', ['$event'])
     handleKeyboardEvent(event: KeyboardEvent) {
+        event.preventDefault();
         if (!this.isRunningCountdown) {
             this.isRunningCountdown = true;
             const countdown = timer(0, 1000).pipe(map(n => this.countdownInSeconds - n), takeWhile(n => n > 0));
@@ -71,8 +77,8 @@ export class AppComponent {
             });
         }
         if (!this.isExpiredCountdown) {
-            let keyTotype = this.words[this.wordIndex][this.characterIndex];
-            if (event.key == keyTotype.value) {
+            const keyToType = this.words[this.wordIndex][this.characterIndex];
+            if (event.key == keyToType.value) {
                 const lastWordIndex = this.words.length - 1;
                 const lastWordCharaacterIndex = this.words[lastWordIndex].length - 1;
                 if (this.wordIndex < lastWordIndex || lastWordCharaacterIndex < this.characterIndex) {
@@ -88,10 +94,13 @@ export class AppComponent {
 
     selectNextCharacter() {
         const currentWord = this.words[this.wordIndex];
-        if (this.characterIndex < currentWord.length) {
-            currentWord[this.characterIndex].color = LetterColor.PAST_LETTER_ERROR;
+        currentWord[this.characterIndex].color = LetterColor.PAST_LETTER_ERROR;
+        if (this.characterIndex < currentWord.length - 1) {
             this.characterIndex++;
-            currentWord[this.characterIndex].color = LetterColor.LETTER_TO_TYPE;
+        } else {
+            this.wordIndex++;
+            this.characterIndex = 0;
         }
+        this.words[this.wordIndex][this.characterIndex].color = LetterColor.LETTER_TO_TYPE;
     }
 }
