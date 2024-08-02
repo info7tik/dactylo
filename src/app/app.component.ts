@@ -33,9 +33,10 @@ export class AppComponent {
     accuracyPercent = 0;
     wordNumber = 0;
     mistakeCounter = 0;
-    countdownInSeconds = 90;
+    countdownInSeconds = 10;
     remainingSeconds = this.countdownInSeconds;
     words: ColoredLetter[][] = [];
+    private isMistakeDetected = false;
     private isRunningCountdown = false;
     private isExpiredCountdown = false;
 
@@ -70,8 +71,14 @@ export class AppComponent {
                 if (this.remainingSeconds == 0) {
                     this.isExpiredCountdown = true;
                     this.wordNumber = this.wordIndex;
-                    const properlyTypedCharacters = this.wordIndex * 2;
+                    let properlyTypedCharacters = 0;
+                    for(let i = 0; i< this.wordIndex; i++){
+                        properlyTypedCharacters += this.words[i].length;
+                    }
+                    properlyTypedCharacters += this.characterIndex;
+                    console.log(properlyTypedCharacters);
                     const totalHits = properlyTypedCharacters + this.mistakeCounter;
+                    console.log(totalHits);
                     this.accuracyPercent = properlyTypedCharacters / totalHits * 100;
                 }
             });
@@ -82,20 +89,32 @@ export class AppComponent {
                 const lastWordIndex = this.words.length - 1;
                 const lastWordCharaacterIndex = this.words[lastWordIndex].length - 1;
                 if (this.wordIndex < lastWordIndex || lastWordCharaacterIndex < this.characterIndex) {
+                    this.colorCurrentCharacter(this.isMistakeDetected);
+                    this.isMistakeDetected = false;
                     this.selectNextCharacter();
                 }
             } else {
-                this.mistakeCounter++;
+                if (!this.isMistakeDetected) {
+                    this.mistakeCounter++;
+                }
+                this.isMistakeDetected = true;
             }
         } else {
             alert("Time is up!");
         }
     }
 
-    selectNextCharacter() {
+    private colorCurrentCharacter(isMistakeDetected: boolean) {
         const currentWord = this.words[this.wordIndex];
-        currentWord[this.characterIndex].color = LetterColor.PAST_LETTER_ERROR;
-        if (this.characterIndex < currentWord.length - 1) {
+        if (isMistakeDetected) {
+            currentWord[this.characterIndex].color = LetterColor.PAST_LETTER_ERROR;
+        } else {
+            currentWord[this.characterIndex].color = LetterColor.PAST_LETTER_SUCCESS;
+        }
+    }
+
+    private selectNextCharacter() {
+        if (this.characterIndex < this.words[this.wordIndex].length - 1) {
             this.characterIndex++;
         } else {
             this.wordIndex++;
@@ -103,4 +122,5 @@ export class AppComponent {
         }
         this.words[this.wordIndex][this.characterIndex].color = LetterColor.LETTER_TO_TYPE;
     }
+
 }
