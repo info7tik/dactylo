@@ -10,7 +10,6 @@ export class ScoreService {
 
     get(): Score[] {
         const scoresToParse = localStorage.getItem(this.SCORE_KEY);
-        console.log(scoresToParse);
         if (scoresToParse) {
             return JSON.parse(scoresToParse) as Score[];
         } else {

@@ -56,7 +56,6 @@ export class AppComponent implements OnInit {
 
     ngOnInit(): void {
         this.scores = this.scoreService.get();
-        console.log("scores: " + this.scores + " (" + this.scores.length + ")");
     }
 
     @HostListener('document:keypress', ['$event'])
@@ -78,7 +77,6 @@ export class AppComponent implements OnInit {
                     const totalHits = properlyTypedCharacters + this.mistakeCounter;
                     const accuracyPercent = properlyTypedCharacters / totalHits * 100;
                     if (this.mustSaveScore) {
-                        console.log("saving score");
                         this.mustSaveScore = false;
                         const myScore: Score = {
                             date: new Date(),
@@ -132,5 +130,12 @@ export class AppComponent implements OnInit {
             this.characterIndex = 0;
         }
         this.words[this.wordIndex][this.characterIndex].color = LetterColor.LETTER_TO_TYPE;
+    }
+
+    deleteScore(scoreIndex: number) {
+        if (scoreIndex < this.scores.length) {
+            this.scores.splice(scoreIndex, 1);
+            this.scoreService.delete(scoreIndex);
+        }
     }
 }

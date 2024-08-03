@@ -14,12 +14,14 @@
                 <th>Accuracy</th>
                 <th>Mistakes</th>
                 <th>Words Per Minute</th>
+                <th>Delete</th>
             </tr>
-            <tr *ngFor="let score of scores">
+            <tr *ngFor="let score of scores; index as scoreIndex">
                 <td>{{score.date | date:"medium"}}</td>
                 <td>{{score.accuracy.toFixed(1)}}</td>
                 <td>{{score.mistakes}}</td>
                 <td>{{score.wordsPerMinute.toFixed(1)}}</td>
+                <td><input name="{{scoreIndex}}" value="{{scoreIndex}}" type="checkbox" (change)="deleteScore(scoreIndex)"></td>
             </tr>
         </table>
     </div>
