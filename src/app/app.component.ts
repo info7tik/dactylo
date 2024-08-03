@@ -1,9 +1,11 @@
 import { CommonModule } from '@angular/common';
-import { Component, HostListener } from '@angular/core';
+import { Component, HostListener, OnInit } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { map, takeWhile, timer } from 'rxjs';
 import { CharacterComponent } from './character/character.component';
 import { LetterColor } from './letter-color';
+import { Score } from './score';
+import { ScoreService } from './score.service';
 
 interface ColoredLetter {
     value: string;
@@ -14,28 +16,30 @@ interface ColoredLetter {
     selector: 'app-root',
     standalone: true,
     imports: [RouterOutlet, CommonModule, CharacterComponent],
+    providers: [ScoreService],
     templateUrl: './app.component.html',
     styleUrl: './app.component.css'
 })
-export class AppComponent {
-    title = 'dactyl0';
-    textToType = "Les dinosaures forment un super-ordre ainsi qu'un clade extrêmement diversifié de sauropsides de la sous-classe des diapsides et dont les uniques représentants actuels sont les oiseaux. Ce sont des archosauriens ovipares, ayant en commun une posture érigée et partageant un certain nombre de synapomorphies telles que la présence d'une crête deltopectorale allongée au niveau de l'humérus et un acetabulum perforant le bassin. Présentes";
-    instruction = "Start to type the text";
-    wordIndex = 0;
-    characterIndex = 0;
-    characterToType = "";
-    accuracyPercent = 0;
-    wordNumber = 0;
-    mistakeCounter = 0;
-    countdownInSeconds = 90;
-    remainingSeconds = this.countdownInSeconds;
-    words: ColoredLetter[][] = [];
+export class AppComponent implements OnInit {
+    private countdownInSeconds = 90;
+    private textToType = "Les dinosaures forment un super-ordre ainsi qu'un clade extrêmement diversifié de sauropsides de la sous-classe des diapsides et dont les uniques représentants actuels sont les oiseaux. Ce sont des archosauriens ovipares, ayant en commun une posture érigée et partageant un certain nombre de synapomorphies telles que la présence d'une crête deltopectorale allongée au niveau de l'humérus et un acetabulum perforant le bassin. Présentes";
+    private wordIndex = 0;
+    private characterIndex = 0;
+    private mistakeCounter = 0;
     private isMistakeDetected = false;
     private isRunningCountdown = false;
     private isExpiredCountdown = false;
+    private mustSaveScore = true;
+    private scoreService;
 
+    title = 'dactyl0';
+    instruction = "Start to type the text";
+    remainingSeconds = this.countdownInSeconds;
+    words: ColoredLetter[][] = [];
+    scores: Score[] = [];
 
-    constructor() {
+    constructor(scoreService: ScoreService) {
+        this.scoreService = scoreService;
         for (let word of this.textToType.split(" ")) {
             const wordLetters: ColoredLetter[] = [];
             const wordWithSpace = word += " ";
@@ -48,9 +52,12 @@ export class AppComponent {
         }
         const firstLetter = this.words[0][0];
         firstLetter.color = LetterColor.LETTER_TO_TYPE;
-        this.characterToType = firstLetter.value;
     }
 
+    ngOnInit(): void {
+        this.scores = this.scoreService.get();
+        console.log("scores: " + this.scores + " (" + this.scores.length + ")");
+    }
 
     @HostListener('document:keypress', ['$event'])
     handleKeyboardEvent(event: KeyboardEvent) {
@@ -62,16 +69,28 @@ export class AppComponent {
                 this.remainingSeconds -= 1;
                 if (this.remainingSeconds == 0) {
                     this.isExpiredCountdown = true;
-                    this.wordNumber = this.wordIndex;
+                    const wordNumber = this.wordIndex;
                     let properlyTypedCharacters = 0;
-                    for(let i = 0; i< this.wordIndex; i++){
+                    for (let i = 0; i < this.wordIndex; i++) {
                         properlyTypedCharacters += this.words[i].length;
                     }
                     properlyTypedCharacters += this.characterIndex;
-                    console.log(properlyTypedCharacters);
                     const totalHits = properlyTypedCharacters + this.mistakeCounter;
-                    console.log(totalHits);
-                    this.accuracyPercent = properlyTypedCharacters / totalHits * 100;
+                    const accuracyPercent = properlyTypedCharacters / totalHits * 100;
+                    if (this.mustSaveScore) {
+                        console.log("saving score");
+                        this.mustSaveScore = false;
+                        const myScore: Score = {
+                            date: new Date(),
+                            accuracy: accuracyPercent,
+                            mistakes: this.mistakeCounter,
+                            wordNumber: wordNumber,
+                            totalSeconds: this.countdownInSeconds,
+                            wordsPerMinute: wordNumber * 60 / this.countdownInSeconds
+                        };
+                        this.scoreService.add(myScore);
+                        this.scores.push(myScore);
+                    }
                 }
             });
         }
@@ -92,7 +111,7 @@ export class AppComponent {
                 this.isMistakeDetected = true;
             }
         } else {
-            alert("Time is up!");
+            alert("Time is up! Refresh (F5) to restart the timer...");
         }
     }
 
@@ -114,5 +133,4 @@ export class AppComponent {
         }
         this.words[this.wordIndex][this.characterIndex].color = LetterColor.LETTER_TO_TYPE;
     }
-
 }

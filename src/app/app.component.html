@@ -8,11 +8,20 @@
                 <app-character *ngFor="let char of word" [character]="char.value" [color]="char.color"></app-character>
             </div>
         </div>
-        <div class="stats">
-            <div>Accuracy: {{accuracyPercent.toFixed(1)}} %</div>
-            <div>Mistakes: {{mistakeCounter}}</div>
-            <div>Speed: {{wordNumber * 60 / countdownInSeconds}} words/min</div>
-        </div>
+        <table *ngIf="scores.length > 0" class="stats center-text">
+            <tr>
+                <th>Date</th>
+                <th>Accuracy</th>
+                <th>Mistakes</th>
+                <th>Words Per Minute</th>
+            </tr>
+            <tr *ngFor="let score of scores">
+                <td>{{score.date | date:"medium"}}</td>
+                <td>{{score.accuracy.toFixed(1)}}</td>
+                <td>{{score.mistakes}}</td>
+                <td>{{score.wordsPerMinute.toFixed(1)}}</td>
+            </tr>
+        </table>
     </div>
 </main>
 
