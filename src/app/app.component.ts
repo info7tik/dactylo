@@ -6,6 +6,7 @@ import { CharacterComponent } from './character/character.component';
 import { LetterColor } from './letter-color';
 import { Score } from './score';
 import { ScoreService } from './score.service';
+import { TextService } from './text.service';
 
 interface ColoredLetter {
     value: string;
@@ -16,20 +17,22 @@ interface ColoredLetter {
     selector: 'app-root',
     standalone: true,
     imports: [RouterOutlet, CommonModule, CharacterComponent],
-    providers: [ScoreService],
+    providers: [TextService, ScoreService],
     templateUrl: './app.component.html',
     styleUrl: './app.component.css'
 })
 export class AppComponent implements OnInit {
     private countdownInSeconds = 90;
-    private textToType = "Les dinosaures forment un super-ordre ainsi qu'un clade extrêmement diversifié de sauropsides de la sous-classe des diapsides et dont les uniques représentants actuels sont les oiseaux. Ce sont des archosauriens ovipares, ayant en commun une posture érigée et partageant un certain nombre de synapomorphies telles que la présence d'une crête deltopectorale allongée au niveau de l'humérus et un acetabulum perforant le bassin. Présentes";
+    private textToType = "";
     private wordIndex = 0;
     private characterIndex = 0;
     private mistakeCounter = 0;
     private isMistakeDetected = false;
     private isRunningCountdown = false;
     private isExpiredCountdown = false;
+    private isEndOfText = false;
     private mustSaveScore = true;
+    private textService;
     private scoreService;
 
     title = 'dactyl0';
@@ -38,12 +41,25 @@ export class AppComponent implements OnInit {
     words: ColoredLetter[][] = [];
     scores: Score[] = [];
 
-    constructor(scoreService: ScoreService) {
+    constructor(textService: TextService, scoreService: ScoreService) {
+        this.textService = textService;
         this.scoreService = scoreService;
-        for (let word of this.textToType.split(" ")) {
+    }
+
+    ngOnInit(): void {
+        this.textToType = this.textService.getRandom();
+        this.scores = this.scoreService.get();
+        this.words = [];
+        const textWords = this.textToType.split(" ");
+        for (const [index, word] of textWords.entries()) {
             const wordLetters: ColoredLetter[] = [];
-            const wordWithSpace = word += " ";
-            for (let char of wordWithSpace) {
+            let wordWithSpace;
+            if (index === textWords.length - 1) {
+                wordWithSpace = word;
+            } else {
+                wordWithSpace = word + " ";
+            }
+            for (const char of wordWithSpace) {
                 wordLetters.push({ value: char, color: LetterColor.FUTURE_LETTER });
             }
             if (wordLetters.length > 0) {
@@ -54,10 +70,6 @@ export class AppComponent implements OnInit {
         firstLetter.color = LetterColor.LETTER_TO_TYPE;
     }
 
-    ngOnInit(): void {
-        this.scores = this.scoreService.get();
-    }
-
     @HostListener('document:keypress', ['$event'])
     handleKeyboardEvent(event: KeyboardEvent) {
         event.preventDefault();
@@ -66,7 +78,7 @@ export class AppComponent implements OnInit {
             const countdown = timer(0, 1000).pipe(map(n => this.countdownInSeconds - n), takeWhile(n => n > 0));
             countdown.subscribe(() => {
                 this.remainingSeconds -= 1;
-                if (this.remainingSeconds == 0) {
+                if (this.remainingSeconds == 0 && !this.isEndOfText) {
                     this.isExpiredCountdown = true;
                     const wordNumber = this.wordIndex;
                     let properlyTypedCharacters = 0;
@@ -94,10 +106,10 @@ export class AppComponent implements OnInit {
         }
         if (!this.isExpiredCountdown) {
             const keyToType = this.words[this.wordIndex][this.characterIndex];
-            if (event.key == keyToType.value) {
+            if (event.key === keyToType.value) {
                 const lastWordIndex = this.words.length - 1;
-                const lastWordCharaacterIndex = this.words[lastWordIndex].length - 1;
-                if (this.wordIndex < lastWordIndex || lastWordCharaacterIndex < this.characterIndex) {
+                const lastWordCharacterIndex = this.words[lastWordIndex].length - 1;
+                if (this.wordIndex <= lastWordIndex || lastWordCharacterIndex < this.characterIndex) {
                     this.colorCurrentCharacter(this.isMistakeDetected);
                     this.isMistakeDetected = false;
                     this.selectNextCharacter();
@@ -126,8 +138,13 @@ export class AppComponent implements OnInit {
         if (this.characterIndex < this.words[this.wordIndex].length - 1) {
             this.characterIndex++;
         } else {
-            this.wordIndex++;
-            this.characterIndex = 0;
+            if (this.wordIndex < this.words.length - 1) {
+                this.wordIndex++;
+                this.characterIndex = 0;
+            } else {
+                this.isEndOfText = true;
+                this.instruction = "Congratulations! You finish the text. Your score can not be saved :'(. Try with longer texts!";
+            }
         }
         this.words[this.wordIndex][this.characterIndex].color = LetterColor.LETTER_TO_TYPE;
     }
