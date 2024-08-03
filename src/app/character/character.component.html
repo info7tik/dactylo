@@ -1,2 +1,3 @@
 <span *ngIf="character !== ' '" [style]="{color: [color]}">{{character}}</span>
-<span *ngIf="character === ' '" [style]="{backgroundColor: [color]}">&nbsp;</span>
+<span *ngIf="character === ' ' && printedSpaceColors.includes(color)" [style]="{backgroundColor: [color]}">&nbsp;</span>
+<span *ngIf="character === ' ' && !printedSpaceColors.includes(color)">&nbsp;</span>
