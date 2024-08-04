@@ -22,7 +22,7 @@ interface ColoredLetter {
     styleUrl: './app.component.css'
 })
 export class AppComponent implements OnInit {
-    private countdownInSeconds = 90;
+    private countdownInSeconds = 5;
     private textToType = "";
     private wordIndex = 0;
     private characterIndex = 0;
@@ -35,7 +35,7 @@ export class AppComponent implements OnInit {
     private textService;
     private scoreService;
 
-    title = 'dactyl0';
+    title = "dactyl0";
     instruction = "Start to type the text";
     remainingSeconds = this.countdownInSeconds;
     words: ColoredLetter[][] = [];
@@ -47,6 +47,7 @@ export class AppComponent implements OnInit {
     }
 
     ngOnInit(): void {
+        this.instruction = "Start to type the text";
         this.textToType = this.textService.getRandom();
         this.scores = this.scoreService.get();
         this.words = [];
@@ -121,7 +122,7 @@ export class AppComponent implements OnInit {
                 this.isMistakeDetected = true;
             }
         } else {
-            alert("Time is up! Refresh (F5) to restart the timer...");
+            this.instruction = "Time is up! Refresh (F5) to restart the timer...";
         }
     }
 
