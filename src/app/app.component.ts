@@ -22,7 +22,7 @@ interface ColoredLetter {
     styleUrl: './app.component.css'
 })
 export class AppComponent implements OnInit {
-    private countdownInSeconds = 5;
+    private countdownInSeconds = 90;
     private textToType = "";
     private wordIndex = 0;
     private characterIndex = 0;
