@@ -1,5 +1,7 @@
 # Dactyl0
-Web application to practice typing texts (on the keyboard).
+Single page web application to practice typing texts (on the keyboard).
+
+**Texts are in french**, but, you can change them!
 
 ## Start the application (development mode)
 1. Clone this repository
@@ -16,6 +18,9 @@ cd dactylo
 npm start
 ```
 4. Open the link [http://localhost:4200](http://localhost:4200)
+
+## Screenshot
+![single page app](./images/dactyl0.png)
 
 ## Additional notes
 When we use the application, scores are saved in our web clients (firefox, chrome, etc.).
