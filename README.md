@@ -4,13 +4,10 @@ Single page web application to practice typing texts (on the keyboard).
 **Texts are in french**, but, you can change them!
 
 ## Start the application (development mode)
-1. Clone this repository
+1. Install nodeJS and Angular [install documentation](https://angular.dev/tools/cli/setup-local)
+2. Clone this repository
 ```
-https://github.com/info7tik/dactylo.git
-```
-2. Install nodeJS and Angular
-```
-https://angular.dev/tools/cli/setup-local
+git clone https://github.com/info7tik/dactylo.git
 ```
 3. Start the project
 ```
@@ -32,11 +29,11 @@ Prerequisite:
 * [Install docker](https://docs.docker.com/engine/install/)
 * [Install nodeJS](https://nodejs.org/en/download/package-manager)
 
-*Note: the following commands must be run from the root directory which is the directory including the [docker](./docker/) directory*
+*Note: the following commands must be run from the root directory which is the directory including the [docker](./docker/) directory.*
 
 1. Clone this repository
 ```
-https://github.com/info7tik/dactylo.git
+git clone https://github.com/info7tik/dactylo.git
 ```
 
 2. Build the application
