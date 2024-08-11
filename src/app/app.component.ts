@@ -23,7 +23,6 @@ interface ColoredLetter {
 })
 export class AppComponent implements OnInit {
     private countdownInSeconds = 90;
-    private textToType = "";
     private wordIndex = 0;
     private characterIndex = 0;
     private mistakeCounter = 0;
@@ -48,10 +47,14 @@ export class AppComponent implements OnInit {
 
     ngOnInit(): void {
         this.instruction = "Start to type the text";
-        this.textToType = this.textService.getRandom();
         this.scores = this.scoreService.get();
         this.words = [];
-        const textWords = this.textToType.split(" ");
+        const textToType = this.textService.getRandom();
+        this.initializeFromText(textToType);
+    }
+
+    private initializeFromText(textToLoad: string) {
+        const textWords = textToLoad.split(" ");
         for (const [index, word] of textWords.entries()) {
             const wordLetters: ColoredLetter[] = [];
             let wordWithSpace;
@@ -80,50 +83,70 @@ export class AppComponent implements OnInit {
             countdown.subscribe(() => {
                 this.remainingSeconds -= 1;
                 if (this.remainingSeconds == 0 && !this.isEndOfText) {
-                    this.isExpiredCountdown = true;
-                    const wordNumber = this.wordIndex;
-                    let properlyTypedCharacters = 0;
-                    for (let i = 0; i < this.wordIndex; i++) {
-                        properlyTypedCharacters += this.words[i].length;
-                    }
-                    properlyTypedCharacters += this.characterIndex;
-                    const totalHits = properlyTypedCharacters + this.mistakeCounter;
-                    const accuracyPercent = properlyTypedCharacters / totalHits * 100;
-                    if (this.mustSaveScore) {
-                        this.mustSaveScore = false;
-                        const myScore: Score = {
-                            date: new Date(),
-                            accuracy: accuracyPercent,
-                            mistakes: this.mistakeCounter,
-                            wordNumber: wordNumber,
-                            totalSeconds: this.countdownInSeconds,
-                            wordsPerMinute: wordNumber * 60 / this.countdownInSeconds
-                        };
-                        this.scoreService.add(myScore);
-                        this.scores.push(myScore);
-                    }
+                    this.manageEndOfCountdown();
                 }
             });
         }
         if (!this.isExpiredCountdown) {
             const keyToType = this.words[this.wordIndex][this.characterIndex];
             if (event.key === keyToType.value) {
-                const lastWordIndex = this.words.length - 1;
-                const lastWordCharacterIndex = this.words[lastWordIndex].length - 1;
-                if (this.wordIndex <= lastWordIndex || lastWordCharacterIndex < this.characterIndex) {
-                    this.colorCurrentCharacter(this.isMistakeDetected);
-                    this.isMistakeDetected = false;
-                    this.selectNextCharacter();
-                }
+                this.manageRightInputCharacter();
             } else {
-                if (!this.isMistakeDetected) {
-                    this.mistakeCounter++;
-                }
-                this.isMistakeDetected = true;
+                this.manageWrongInputCharacter();
             }
         } else {
             this.instruction = "Time is up! Refresh (F5) to restart the timer...";
         }
+    }
+
+    private manageEndOfCountdown() {
+        this.isExpiredCountdown = true;
+        if (this.mustSaveScore) {
+            this.mustSaveScore = false;
+            const properlyTypedCharacters = this.computeProperlyTypedCharacters(this.words, this.wordIndex, this.characterIndex);
+            const myScore = this.computeScore(properlyTypedCharacters, this.mistakeCounter, this.countdownInSeconds);
+            this.scoreService.add(myScore);
+            this.scores.push(myScore);
+        }
+    }
+
+    private computeProperlyTypedCharacters(wordList: ColoredLetter[][], wordIndex: number, characterIndex: number): number {
+        let properlyTypedCharacters = 0;
+        for (let i = 0; i < this.wordIndex; i++) {
+            properlyTypedCharacters += this.words[i].length;
+        }
+        properlyTypedCharacters += this.characterIndex;
+        return properlyTypedCharacters;
+    }
+
+    private computeScore(properlyTypedCharacters: number, mistakeCounter: number, elapsedTime: number): Score {
+        const wordNumber = this.wordIndex;
+        const totalHits = properlyTypedCharacters + this.mistakeCounter;
+        const accuracyPercent = properlyTypedCharacters / totalHits * 100;
+        return {
+            date: new Date(),
+            accuracy: accuracyPercent,
+            mistakes: this.mistakeCounter,
+            wordNumber: wordNumber,
+            totalSeconds: this.countdownInSeconds,
+            wordsPerMinute: wordNumber * 60 / this.countdownInSeconds
+        };
+    }
+
+    private manageRightInputCharacter() {
+        const lastWordIndex = this.words.length - 1;
+        const lastWordCharacterIndex = this.words[lastWordIndex].length - 1;
+        if (this.hasNextCharacter(lastWordIndex, lastWordCharacterIndex)) {
+            this.colorCurrentCharacter(this.isMistakeDetected);
+            this.isMistakeDetected = false;
+            this.selectNextCharacter();
+        } else {
+            this.manageEndOfText();
+        }
+    }
+
+    private hasNextCharacter(lastWordIndex: number, lastWordCharacterIndex: number) {
+        return this.wordIndex <= lastWordIndex || lastWordCharacterIndex + 1 < this.characterIndex;
     }
 
     private colorCurrentCharacter(isMistakeDetected: boolean) {
@@ -142,12 +165,21 @@ export class AppComponent implements OnInit {
             if (this.wordIndex < this.words.length - 1) {
                 this.wordIndex++;
                 this.characterIndex = 0;
-            } else {
-                this.isEndOfText = true;
-                this.instruction = "Congratulations! You finish the text. Your score can not be saved :'(. Try with longer texts!";
             }
         }
         this.words[this.wordIndex][this.characterIndex].color = LetterColor.LETTER_TO_TYPE;
+    }
+
+    private manageEndOfText() {
+        this.isEndOfText = true;
+        this.instruction = "Congratulations! You finish the text. Your score can not be saved :'(. Try with longer texts!";
+    }
+
+    private manageWrongInputCharacter() {
+        if (!this.isMistakeDetected) {
+            this.mistakeCounter++;
+        }
+        this.isMistakeDetected = true;
     }
 
     deleteScore(scoreIndex: number) {
